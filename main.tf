@@ -195,7 +195,7 @@ resource "aws_alb_listener" "listener_http" {
 
 resource "aws_alb_listener_rule" "static" {
   listener_arn = aws_alb_listener.listener_http.arn
-  priority     = 100
+  priority     = 99
 
   action {
     type             = "forward"
@@ -209,35 +209,24 @@ resource "aws_alb_listener_rule" "static" {
   }
 
 }
+/*
+resource "aws_alb_listener_rule" "payment-rule" {
+  listener_arn = aws_alb_listener.listener_http.arn
+  priority     = 99
 
-
-
-resource "aws_instance" "server-1" {
-  ami = "ami-04ad2567c9e3d7893"
-  instance_type = "t2.micro"
-  user_data = "${file("server-script.sh")}"
-  subnet_id = element(aws_subnet.main.*.id, 1)
-  security_groups = ["${aws_security_group.default-sg.id}"]
-  key_name = "jenkins-key-22"
-
-  tags = {
-    Name = "web-server-1"
+  action {
+    type             = "forward"
+    target_group_arn = aws_alb_target_group.group-2.arn
   }
-}
 
-resource "aws_instance" "server-2" {
-  ami = "ami-04ad2567c9e3d7893"
-  instance_type = "t2.micro"
-  user_data = file("server-script.sh")
-  subnet_id = element(aws_subnet.main.*.id, 2)
-  security_groups = ["${aws_security_group.default-sg.id}"]
-  key_name = "jenkins-key-22"
-
-  tags = {
-    Name = "web-server-2"
+  condition {
+    path_pattern {
+      values = ["/payment/*"]
+    }
   }
-}
 
+}
+*/
 resource "aws_alb_target_group_attachment" "alb_TG_instance" {
   target_group_arn = "${aws_alb_target_group.group.arn}"
   target_id        = "${aws_instance.server-1.id}"  
@@ -269,4 +258,8 @@ output "public-ip-server-1" {
 
 output "public-ip-server-2" {
   value = aws_instance.server-2.public_ip
+}
+
+output "aws_alb_public_DNS" {
+  value = aws_alb.alb.dns_name
 }
